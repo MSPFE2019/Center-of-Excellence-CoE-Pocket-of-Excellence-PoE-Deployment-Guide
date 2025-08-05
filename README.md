@@ -1,4 +1,6 @@
 **Center of Excellence (CoE) & Pocket of Excellence (PoE) Deployment Guide**
+
+
 *Pre-Installation Checklists • Scope, Capabilities & Limitations*
 
 ---
