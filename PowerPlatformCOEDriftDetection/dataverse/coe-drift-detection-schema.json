@@ -1,0 +1,164 @@
+{
+  "solution": {
+    "uniqueName": "PowerPlatformCOEDriftDetection",
+    "displayName": "Power Platform COE Drift Detection",
+    "version": "1.0.0.0",
+    "publisherUniqueName": "PowerPlatformCOE",
+    "publisherDisplayName": "Power Platform COE",
+    "publisherPrefix": "coe"
+  },
+  "environmentVariables": [
+    {
+      "schemaName": "coe_CloudName",
+      "displayName": "COE Cloud Name",
+      "description": "Target Microsoft cloud for the drift detection add-on. Supported values: GCC, GCCHigh, DoD.",
+      "type": "String",
+      "defaultValue": "GCC"
+    },
+    {
+      "schemaName": "coe_GraphTenantId",
+      "displayName": "COE Graph Tenant ID",
+      "description": "Tenant ID used by the drift detection flow when it resolves Graph-based owner checks.",
+      "type": "String"
+    },
+    {
+      "schemaName": "coe_GraphClientId",
+      "displayName": "COE Graph Client ID",
+      "description": "Client/application ID for the Graph app registration used by the drift detection flow.",
+      "type": "String"
+    },
+    {
+      "schemaName": "coe_GraphClientSecret",
+      "displayName": "COE Graph Client Secret",
+      "description": "Client secret for the Graph app registration used by the drift detection flow.",
+      "type": "Secret"
+    },
+    {
+      "schemaName": "coe_GraphAuthorityUrl",
+      "displayName": "COE Graph Authority URL",
+      "description": "Microsoft identity authority URL used to acquire Graph tokens.",
+      "type": "String",
+      "defaultValue": "https://login.microsoftonline.com"
+    },
+    {
+      "schemaName": "coe_GraphAudience",
+      "displayName": "COE Graph Audience",
+      "description": "Microsoft Graph resource/audience URL for token acquisition.",
+      "type": "String",
+      "defaultValue": "https://graph.microsoft.com"
+    },
+    {
+      "schemaName": "coe_GraphBaseUrl",
+      "displayName": "COE Graph Base URL",
+      "description": "Microsoft Graph API base URL used by the drift detection flow.",
+      "type": "String",
+      "defaultValue": "https://graph.microsoft.com/v1.0"
+    },
+    {
+      "schemaName": "coe_PowerPlatformApiBaseUrl",
+      "displayName": "COE Power Platform API Base URL",
+      "description": "Power Platform Admin API base URL used by the drift detection flow.",
+      "type": "String",
+      "defaultValue": "https://api.bap.microsoft.com/providers/Microsoft.BusinessAppPlatform"
+    },
+    {
+      "schemaName": "coe_ComparisonLookbackDays",
+      "displayName": "COE Comparison Lookback Days",
+      "description": "How far back the flow should search for the prior successful snapshot when comparing drift.",
+      "type": "Number",
+      "defaultValue": 2
+    }
+  ],
+  "choices": {
+    "snapshotScope": ["Tenant", "Environment", "Solution"],
+    "inventoryObjectType": ["App", "Flow", "Solution", "Custom Connector", "Connection", "Connection Reference", "Environment", "Other"],
+    "managedState": ["Managed", "Unmanaged", "Unknown"],
+    "lifecycleState": ["Draft", "Published", "Disabled", "Deleted", "Unknown"],
+    "driftFindingType": ["New Item", "Deleted Item", "Owner Changed", "Owner Left Org", "Unmanaged Edit", "DLP Group Changed", "Blocked DLP Group", "Shared With Everyone", "Permission Drift", "Other"],
+    "riskLevel": ["Low", "Medium", "High", "Critical", "Unknown"],
+    "findingStatus": ["Open", "Investigating", "Acknowledged", "Resolved", "Suppressed"],
+    "runStatus": ["Started", "Succeeded", "Failed", "Partial"],
+    "sourceSystem": ["Power Platform Admin", "Dataverse", "Microsoft Graph", "Power BI", "Manual"]
+  },
+  "tables": [
+    {
+      "schemaName": "coe_InventorySnapshot",
+      "displayName": "Inventory Snapshot",
+      "collectionName": "Inventory Snapshots",
+      "primaryName": "coe_SnapshotName",
+      "ownership": "UserOwned",
+      "columns": [
+        { "schemaName": "coe_SnapshotName", "displayName": "Snapshot Name", "type": "string", "maxLength": 300, "required": true },
+        { "schemaName": "coe_SnapshotDate", "displayName": "Snapshot Date", "type": "datetime" },
+        { "schemaName": "coe_ScopeType", "displayName": "Scope Type", "type": "choice", "choice": "snapshotScope" },
+        { "schemaName": "coe_ScopeId", "displayName": "Scope ID", "type": "string", "maxLength": 300 },
+        { "schemaName": "coe_ScopeName", "displayName": "Scope Name", "type": "string", "maxLength": 300 },
+        { "schemaName": "coe_CloudName", "displayName": "Cloud Name", "type": "string", "maxLength": 50 },
+        { "schemaName": "coe_RunStatus", "displayName": "Run Status", "type": "choice", "choice": "runStatus" },
+        { "schemaName": "coe_TotalItems", "displayName": "Total Items", "type": "integer" },
+        { "schemaName": "coe_NewItems", "displayName": "New Items", "type": "integer" },
+        { "schemaName": "coe_ChangedItems", "displayName": "Changed Items", "type": "integer" },
+        { "schemaName": "coe_DeletedItems", "displayName": "Deleted Items", "type": "integer" },
+        { "schemaName": "coe_PreviousSnapshotDate", "displayName": "Previous Snapshot Date", "type": "datetime" },
+        { "schemaName": "coe_ErrorMessage", "displayName": "Error Message", "type": "memo", "maxLength": 1048576 },
+        { "schemaName": "coe_RawSourcePayload", "displayName": "Raw Source Payload", "type": "memo", "maxLength": 1048576 }
+      ]
+    },
+    {
+      "schemaName": "coe_InventorySnapshotItem",
+      "displayName": "Inventory Snapshot Item",
+      "collectionName": "Inventory Snapshot Items",
+      "primaryName": "coe_ItemName",
+      "ownership": "UserOwned",
+      "lookupTo": "coe_InventorySnapshot",
+      "columns": [
+        { "schemaName": "coe_ItemName", "displayName": "Item Name", "type": "string", "maxLength": 300, "required": true },
+        { "schemaName": "coe_ItemKey", "displayName": "Item Key", "type": "string", "maxLength": 500, "required": true },
+        { "schemaName": "coe_ItemType", "displayName": "Item Type", "type": "choice", "choice": "inventoryObjectType" },
+        { "schemaName": "coe_LifecycleState", "displayName": "Lifecycle State", "type": "choice", "choice": "lifecycleState" },
+        { "schemaName": "coe_ManagedState", "displayName": "Managed State", "type": "choice", "choice": "managedState" },
+        { "schemaName": "coe_EnvironmentId", "displayName": "Environment ID", "type": "string", "maxLength": 200 },
+        { "schemaName": "coe_EnvironmentName", "displayName": "Environment Name", "type": "string", "maxLength": 300 },
+        { "schemaName": "coe_SolutionName", "displayName": "Solution Name", "type": "string", "maxLength": 300 },
+        { "schemaName": "coe_OwnerUpn", "displayName": "Owner UPN", "type": "string", "maxLength": 300 },
+        { "schemaName": "coe_OwnerDisplayName", "displayName": "Owner Display Name", "type": "string", "maxLength": 300 },
+        { "schemaName": "coe_DlpPolicyName", "displayName": "DLP Policy Name", "type": "string", "maxLength": 300 },
+        { "schemaName": "coe_DlpGroupName", "displayName": "DLP Group Name", "type": "string", "maxLength": 300 },
+        { "schemaName": "coe_ConnectorName", "displayName": "Connector Name", "type": "string", "maxLength": 300 },
+        { "schemaName": "coe_SharedWithEveryone", "displayName": "Shared With Everyone", "type": "boolean" },
+        { "schemaName": "coe_LastModifiedDate", "displayName": "Last Modified Date", "type": "datetime" },
+        { "schemaName": "coe_Fingerprint", "displayName": "Fingerprint", "type": "string", "maxLength": 500 },
+        { "schemaName": "coe_SourceSystem", "displayName": "Source System", "type": "choice", "choice": "sourceSystem" },
+        { "schemaName": "coe_RawSourcePayload", "displayName": "Raw Source Payload", "type": "memo", "maxLength": 1048576 }
+      ]
+    },
+    {
+      "schemaName": "coe_DriftFinding",
+      "displayName": "Drift Finding",
+      "collectionName": "Drift Findings",
+      "primaryName": "coe_FindingTitle",
+      "ownership": "UserOwned",
+      "lookupTo": "coe_InventorySnapshot",
+      "columns": [
+        { "schemaName": "coe_FindingTitle", "displayName": "Finding Title", "type": "string", "maxLength": 300, "required": true },
+        { "schemaName": "coe_FindingType", "displayName": "Finding Type", "type": "choice", "choice": "driftFindingType" },
+        { "schemaName": "coe_Severity", "displayName": "Severity", "type": "choice", "choice": "riskLevel" },
+        { "schemaName": "coe_Status", "displayName": "Status", "type": "choice", "choice": "findingStatus" },
+        { "schemaName": "coe_ItemType", "displayName": "Item Type", "type": "choice", "choice": "inventoryObjectType" },
+        { "schemaName": "coe_ItemKey", "displayName": "Item Key", "type": "string", "maxLength": 500 },
+        { "schemaName": "coe_ItemName", "displayName": "Item Name", "type": "string", "maxLength": 300 },
+        { "schemaName": "coe_EnvironmentId", "displayName": "Environment ID", "type": "string", "maxLength": 200 },
+        { "schemaName": "coe_EnvironmentName", "displayName": "Environment Name", "type": "string", "maxLength": 300 },
+        { "schemaName": "coe_PreviousSnapshotDate", "displayName": "Previous Snapshot Date", "type": "datetime" },
+        { "schemaName": "coe_CurrentSnapshotDate", "displayName": "Current Snapshot Date", "type": "datetime" },
+        { "schemaName": "coe_PreviousValue", "displayName": "Previous Value", "type": "memo", "maxLength": 1048576 },
+        { "schemaName": "coe_CurrentValue", "displayName": "Current Value", "type": "memo", "maxLength": 1048576 },
+        { "schemaName": "coe_DeltaSummary", "displayName": "Delta Summary", "type": "memo", "maxLength": 1048576 },
+        { "schemaName": "coe_RecommendedAction", "displayName": "Recommended Action", "type": "memo", "maxLength": 1048576 },
+        { "schemaName": "coe_DetectedOn", "displayName": "Detected On", "type": "datetime" },
+        { "schemaName": "coe_SourceSystem", "displayName": "Source System", "type": "choice", "choice": "sourceSystem" },
+        { "schemaName": "coe_RawSourcePayload", "displayName": "Raw Source Payload", "type": "memo", "maxLength": 1048576 }
+      ]
+    }
+  ]
+}

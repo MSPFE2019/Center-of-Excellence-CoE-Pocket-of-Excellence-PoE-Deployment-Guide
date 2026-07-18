@@ -1,0 +1,47 @@
+Total Snapshots = COUNTROWS('Inventory Snapshot')
+
+Total Snapshot Items = COUNTROWS('Inventory Snapshot Item')
+
+Total Findings = COUNTROWS('Drift Finding')
+
+Open Findings =
+CALCULATE(
+    [Total Findings],
+    'Drift Finding'[Status] = "Open"
+)
+
+High Risk Findings =
+CALCULATE(
+    [Total Findings],
+    'Drift Finding'[Severity] IN { "High", "Critical" }
+)
+
+New Items =
+CALCULATE(
+    [Total Findings],
+    'Drift Finding'[Finding Type] = "New Item"
+)
+
+Deleted Items =
+CALCULATE(
+    [Total Findings],
+    'Drift Finding'[Finding Type] = "Deleted Item"
+)
+
+Unmanaged Edits =
+CALCULATE(
+    [Total Findings],
+    'Drift Finding'[Finding Type] = "Unmanaged Edit"
+)
+
+Owner Issues =
+CALCULATE(
+    [Total Findings],
+    'Drift Finding'[Finding Type] IN { "Owner Changed", "Owner Left Org" }
+)
+
+DLP Risks =
+CALCULATE(
+    [Total Findings],
+    'Drift Finding'[Finding Type] IN { "DLP Group Changed", "Blocked DLP Group" }
+)
